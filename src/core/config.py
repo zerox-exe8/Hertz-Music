@@ -23,6 +23,10 @@ class Config:
     # Database Configuration
     DATABASE_URL: str = os.getenv("DATABASE_URL", "").strip()
 
+    # Lavalink Node Configuration
+    LAVALINK_URI: str = os.getenv("LAVALINK_URI", "http://fi15.bot-hosting.net:26267").strip()
+    LAVALINK_PASSWORD: str = os.getenv("LAVALINK_PASSWORD", "NfJXUsGSO4tVI1LDl7v3XPYZ").strip()
+
     # Bot Identity & Branding
     BOT_NAME: str = os.getenv("BOT_NAME", "Hertz Music").strip()
     BOT_DESCRIPTION: str = os.getenv("BOT_DESCRIPTION", "Next-Gen Discord Music Bot").strip()
