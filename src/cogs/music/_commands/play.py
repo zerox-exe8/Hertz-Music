@@ -63,7 +63,11 @@ async def handle_play(ctx: CustomContext, controller: MusicController, query: st
             if track.thumbnail:
                 embed.set_thumbnail(url=track.thumbnail)
             embed.set_footer(text=f"Requested by {track.requester}")
-            await status_msg.edit(content=None, embed=embed)
+            
+            try:
+                await status_msg.edit(content=None, embed=embed)
+            except discord.Forbidden:
+                await status_msg.edit(content=f"🎶 **Now Playing:** [{track.title}]({track.url}) by `{track.author}` (Requested by {track.requester})")
         except Exception as e:
             logger.error(f"Error starting playback: {e}")
             await status_msg.edit(content=f"Error playing track: `{e}`")
@@ -74,4 +78,7 @@ async def handle_play(ctx: CustomContext, controller: MusicController, query: st
             description=f"**[{track.title}]({track.url})**\nPosition #{len(queue)}",
             color=0x2B2D31
         )
-        await status_msg.edit(content=None, embed=embed)
+        try:
+            await status_msg.edit(content=None, embed=embed)
+        except discord.Forbidden:
+            await status_msg.edit(content=f"📜 **Track Queued:** [{track.title}]({track.url}) (Position #{len(queue)})")

@@ -22,7 +22,7 @@ class Ping(commands.Cog):
     async def ping_command(self, ctx: CustomContext) -> None:
         """Check websocket and REST API latency."""
         t0 = time.perf_counter()
-        msg = await ctx.send("🏓 Measuring latency...")
+        msg = await ctx.send("Measuring latency...")
         t1 = time.perf_counter()
 
         rest_latency = round((t1 - t0) * 1000, 2)
@@ -32,16 +32,21 @@ class Ping(commands.Cog):
         if ctx.guild and ctx.guild.voice_client:
             voice_latency_str = f"{round(ctx.guild.voice_client.latency * 1000, 2)} ms"
 
+        plain_text = f"**Pong!**\n• WebSocket: `{ws_latency} ms`\n• REST API: `{rest_latency} ms`\n• Voice Gateway: `{voice_latency_str}`"
+
         embed = discord.Embed(
-            title="🏓 Pong!",
+            title="Pong!",
             color=Config.EMBED_COLOR
         )
-        embed.add_field(name="🌐 WebSocket", value=f"`{ws_latency} ms`", inline=True)
-        embed.add_field(name="⚡ REST API", value=f"`{rest_latency} ms`", inline=True)
-        embed.add_field(name="🎙️ Voice Gateway", value=f"`{voice_latency_str}`", inline=True)
+        embed.add_field(name="WebSocket", value=f"`{ws_latency} ms`", inline=True)
+        embed.add_field(name="REST API", value=f"`{rest_latency} ms`", inline=True)
+        embed.add_field(name="Voice Gateway", value=f"`{voice_latency_str}`", inline=True)
         embed.set_footer(text=Config.FOOTER_TEXT)
 
-        await msg.edit(content=None, embed=embed)
+        try:
+            await msg.edit(content=None, embed=embed)
+        except discord.Forbidden:
+            await msg.edit(content=plain_text)
 
 
 async def setup(bot: commands.Bot) -> None:

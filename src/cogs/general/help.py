@@ -22,12 +22,6 @@ class Help(commands.Cog):
         """Display the complete list of music commands."""
         prefix = Config.DEFAULT_PREFIX
 
-        embed = discord.Embed(
-            title=f"🎵 {Config.BOT_NAME} - Music Commands",
-            description=f"> {Config.BOT_DESCRIPTION}\n> **Prefix:** `{prefix}` | **Slash Commands:** `/`",
-            color=Config.EMBED_COLOR
-        )
-
         music_cmds = (
             f"`{prefix}play <query>` - Play any song or link in voice\n"
             f"`{prefix}pause` - Pause currently playing music\n"
@@ -41,19 +35,35 @@ class Help(commands.Cog):
             f"`{prefix}clear` - Clear all upcoming songs from queue\n"
             f"`{prefix}remove <pos>` - Remove a specific song by its queue position"
         )
-        embed.add_field(name="🎶 Music Controls", value=music_cmds, inline=False)
-
         info_cmds = (
             f"`{prefix}ping` - Check bot latency and voice gateway ping\n"
             f"`{prefix}sync` - Sync slash commands (Developers only)"
         )
-        embed.add_field(name="⚙️ Utilities", value=info_cmds, inline=False)
+
+        plain_text = (
+            f"**{Config.BOT_NAME} - Music Commands**\n"
+            f"> {Config.BOT_DESCRIPTION}\n> **Prefix:** `{prefix}` | **Slash Commands:** `/`\n\n"
+            f"**Music Controls:**\n{music_cmds}\n\n"
+            f"**Utilities:**\n{info_cmds}"
+        )
+
+        embed = discord.Embed(
+            title=f"{Config.BOT_NAME} - Music Commands",
+            description=f"> {Config.BOT_DESCRIPTION}\n> **Prefix:** `{prefix}` | **Slash Commands:** `/`",
+            color=Config.EMBED_COLOR
+        )
+        embed.add_field(name="Music Controls", value=music_cmds, inline=False)
+        embed.add_field(name="Utilities", value=info_cmds, inline=False)
 
         if Config.SUPPORT_SERVER_URL:
-            embed.add_field(name="🔗 Links", value=f"[Support Server]({Config.SUPPORT_SERVER_URL})", inline=False)
+            embed.add_field(name="Links", value=f"[Support Server]({Config.SUPPORT_SERVER_URL})", inline=False)
 
         embed.set_footer(text=Config.FOOTER_TEXT)
-        await ctx.send(embed=embed)
+
+        try:
+            await ctx.send(embed=embed)
+        except discord.Forbidden:
+            await ctx.send(plain_text)
 
 
 async def setup(bot: commands.Bot) -> None:

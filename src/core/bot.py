@@ -45,6 +45,21 @@ class HertzBot(commands.Bot):
         """Inject our CustomContext into all commands."""
         return await super().get_context(origin, cls=cls)
 
+    async def on_message(self, message: discord.Message) -> None:
+        """Central message processor with diagnostics."""
+        if message.author.bot:
+            return
+
+        if not message.content:
+            logger.warning(
+                f"Received empty message from {message.author} in #{message.channel}. "
+                f"If you typed a command, please ensure 'MESSAGE CONTENT INTENT' is enabled in Discord Developer Portal -> Bot -> Privileged Gateway Intents."
+            )
+            return
+
+        logger.info(f"Command/Message from {message.author} in #{message.channel}: '{message.content}'")
+        await self.process_commands(message)
+
     async def on_ready(self) -> None:
         """Executed when bot is connected and ready."""
         logger.info(f"Connected as {self.user} (ID: {self.user.id if self.user else 'Unknown'})")
@@ -70,6 +85,8 @@ class HertzBot(commands.Bot):
         status = status_map.get(Config.STATUS_STATE, discord.Status.online)
         await self.change_presence(activity=activity, status=status)
         logger.info(f"Presence set to: {Config.STATUS_TEXT} ({Config.ACTIVITY_TYPE})")
+        logger.info(f"Active Guilds: {len(self.guilds)}")
+        logger.info(f"Registered Commands: {[c.name for c in self.commands]}")
 
     async def setup_hook(self) -> None:
         """Asynchronous initialization before websocket login."""
@@ -78,6 +95,13 @@ class HertzBot(commands.Bot):
 
         # Load all Cogs
         await self._load_all_extensions()
+
+        # Global Slash Command Sync
+        try:
+            synced = await self.tree.sync()
+            logger.info(f"Globally synced {len(synced)} slash commands with Discord.")
+        except Exception as e:
+            logger.warning(f"Slash command auto-sync notice: {e}")
 
         # Start 24/7 Keep-Alive Web Server
         await self.server.start()
