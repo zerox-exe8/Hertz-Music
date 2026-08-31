@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: hertz-music-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: BOT_NAME
+        value: Hertz Music
+      - key: DEFAULT_PREFIX
+        value: "."
+      - key: EMBED_COLOR
+        value: "0x2B2D31"
+      - key: STATUS_TEXT
+        value: ".help | 320kbps HD Audio"
+      - key: ACTIVITY_TYPE
+        value: listening
+      - key: PORT
+        value: 8080
