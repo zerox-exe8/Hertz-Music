@@ -54,14 +54,26 @@ async def send_container_response(
     container: MusicContainer,
     ephemeral: bool = False
 ) -> Optional[discord.Message]:
-    """Send formatted container embed response."""
+    """Send formatted container embed response with automatic text fallback."""
     embed = container.build()
-    if isinstance(target, discord.Interaction):
-        if target.response.is_done():
-            return await target.followup.send(embed=embed, ephemeral=ephemeral)
-        else:
-            await target.response.send_message(embed=embed, ephemeral=ephemeral)
-            return None
-    elif isinstance(target, discord.Message):
-        return await target.reply(embed=embed, mention_author=False)
+    plain_text = f"**{container.title or ''}**\n\n" + "\n".join(container.description_parts)
+    try:
+        if isinstance(target, discord.Interaction):
+            if target.response.is_done():
+                return await target.followup.send(embed=embed, ephemeral=ephemeral)
+            else:
+                await target.response.send_message(embed=embed, ephemeral=ephemeral)
+                return None
+        elif isinstance(target, discord.Message):
+            return await target.reply(embed=embed, mention_author=False)
+    except discord.Forbidden:
+        # Fallback if bot lacks 'Embed Links' permission
+        if isinstance(target, discord.Interaction):
+            if target.response.is_done():
+                return await target.followup.send(content=plain_text, ephemeral=ephemeral)
+            else:
+                await target.response.send_message(content=plain_text, ephemeral=ephemeral)
+                return None
+        elif isinstance(target, discord.Message):
+            return await target.reply(content=plain_text, mention_author=False)
     return None

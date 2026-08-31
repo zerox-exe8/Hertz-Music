@@ -1,5 +1,6 @@
 """
 Hertz Music Bot - Custom Command Context
+Includes automatic plain-text fallback when Discord 'Embed Links' permission is missing.
 """
 
 from __future__ import annotations
@@ -13,6 +14,27 @@ from src.utils.containers import MusicContainer, send_container_response
 
 class CustomContext(commands.Context):
     """Custom context providing convenient helper response methods."""
+
+    async def send(self, content: Optional[str] = None, *, embed: Optional[discord.Embed] = None, **kwargs) -> discord.Message:
+        """Safe send with automatic fallback for missing embed permissions."""
+        try:
+            return await super().send(content, embed=embed, **kwargs)
+        except discord.Forbidden:
+            if embed:
+                # Convert embed to clean plain text fallback
+                parts = []
+                if embed.title:
+                    parts.append(f"**{embed.title}**")
+                if embed.description:
+                    parts.append(embed.description)
+                for field in embed.fields:
+                    parts.append(f"\n**{field.name}**\n{field.value}")
+                if embed.footer and embed.footer.text:
+                    parts.append(f"\n_{embed.footer.text}_")
+                fallback_text = "\n".join(parts)
+                final_content = f"{content}\n{fallback_text}" if content else fallback_text
+                return await super().send(final_content, **kwargs)
+            raise
 
     async def send_container(
         self,

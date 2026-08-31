@@ -100,6 +100,26 @@ class HertzBot(commands.Bot):
             except Exception as e:
                 logger.error(f"Failed to load extension {module_name}: {e}", exc_info=e)
 
+    async def on_command_error(self, ctx: CustomContext, error: Exception) -> None:
+        """Central command error handler."""
+        if isinstance(error, commands.CommandNotFound):
+            return
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f"⚠️ Missing argument: `{error.param.name}`. Use `.help` for usage.")
+            return
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ You do not have permission to use this command.")
+            return
+        if isinstance(error, commands.CommandInvokeError):
+            original = getattr(error, "original", error)
+            if isinstance(original, discord.Forbidden):
+                await ctx.send("⚠️ Bot is missing permissions (e.g. `Embed Links` or `Connect/Speak`). Please grant Administrator or Embed Links to the bot role.")
+                return
+            logger.error(f"Error executing command '{ctx.command}': {original}", exc_info=original)
+            await ctx.send(f"❌ An error occurred: `{original}`")
+            return
+        logger.error(f"Unhandled error in {ctx.command}: {error}", exc_info=error)
+
     async def close(self) -> None:
         """Gracefully close bot and sessions."""
         if self.session and not self.session.closed:
