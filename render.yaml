@@ -19,5 +19,9 @@ services:
         value: ".help | 320kbps HD Audio"
       - key: ACTIVITY_TYPE
         value: listening
+      - key: STATUS_STATE
+        value: dnd
+      - key: DATABASE_URL
+        sync: false
       - key: PORT
         value: 8080
