@@ -6,6 +6,12 @@ import asyncio
 import logging
 import colorlog
 
+try:
+    import static_ffmpeg
+    static_ffmpeg.add_paths()
+except Exception:
+    pass
+
 from src.core.config import Config
 from src.core.bot import HertzBot
 
