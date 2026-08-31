@@ -20,6 +20,9 @@ class Config:
     # Discord Bot Token
     DISCORD_TOKEN: str = os.getenv("DISCORD_TOKEN", "").strip()
 
+    # Database Configuration
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "").strip()
+
     # Bot Identity & Branding
     BOT_NAME: str = os.getenv("BOT_NAME", "Hertz Music").strip()
     BOT_DESCRIPTION: str = os.getenv("BOT_DESCRIPTION", "Ultra-High-Fidelity 320kbps Lossless Audio Music Engine").strip()
