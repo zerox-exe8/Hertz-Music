@@ -20,7 +20,9 @@ logger = logging.getLogger("Hertz.Music.Cmd.Play")
 
 async def handle_play(ctx: CustomContext, controller: MusicController, query: str) -> None:
     """Execute the play command."""
+    logger.info(f"handle_play called with query='{query}', author={ctx.author}, voice={getattr(ctx.author, 'voice', None)}")
     if not ctx.author.voice or not ctx.author.voice.channel:
+        logger.info(f"User {ctx.author} is not connected to voice.")
         await ctx.send("You must be in a Voice Channel to play music.")
         return
 
@@ -53,7 +55,7 @@ async def handle_play(ctx: CustomContext, controller: MusicController, query: st
     if not voice_client.is_playing() and not voice_client.is_paused():
         controller.current_tracks[guild_id] = track
         try:
-            source = discord.FFmpegOpusAudio(track.stream_url, **FFMPEG_OPTIONS)
+            source = discord.FFmpegPCMAudio(track.stream_url, **FFMPEG_OPTIONS)
             voice_client.play(source, after=lambda e: controller._handle_track_finish(ctx, e))
             embed = discord.Embed(
                 title="Now Playing",

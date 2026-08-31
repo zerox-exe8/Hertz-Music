@@ -2,48 +2,38 @@
 Hertz Music Bot - Main Entrypoint
 """
 
+from __future__ import annotations
+
 import asyncio
-import logging
-import colorlog
+import os
+import sys
 
-try:
-    import static_ffmpeg
-    static_ffmpeg.add_paths()
-except Exception:
-    pass
+from src.utils.logger import setup_logging
+setup_logging()
 
-from src.core.config import Config
+import static_ffmpeg
+import discord.opus
+
+# Ensure FFmpeg binaries are registered on PATH
+static_ffmpeg.add_paths()
+
+# Ensure Opus DLL is loaded on Windows
+if not discord.opus.is_loaded():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    for dll_name in ["opus.dll", "libopus-0.dll", "libopus.dll"]:
+        dll_path = os.path.join(base_dir, dll_name)
+        if os.path.exists(dll_path):
+            try:
+                discord.opus.load_opus(dll_path)
+                break
+            except Exception as e:
+                print(f"Error loading {dll_name}: {e}")
+
 from src.core.bot import HertzBot
-
-
-def setup_logging() -> None:
-    """Setup structured colorized console logging."""
-    handler = colorlog.StreamHandler()
-    formatter = colorlog.ColoredFormatter(
-        "%(log_color)s%(asctime)s [%(levelname)s] [%(name)s]%(reset)s %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        log_colors={
-            "DEBUG": "cyan",
-            "INFO": "green",
-            "WARNING": "yellow",
-            "ERROR": "red",
-            "CRITICAL": "bold_red",
-        },
-    )
-    handler.setFormatter(formatter)
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    logger.addHandler(handler)
+from src.core.config import Config
 
 
 async def main() -> None:
-    setup_logging()
-    logger = logging.getLogger("Hertz.Main")
-
-    if not Config.DISCORD_TOKEN:
-        logger.critical("DISCORD_TOKEN is missing in .env! Please set your bot token and restart.")
-        return
-
     bot = HertzBot()
     async with bot:
         await bot.start(Config.DISCORD_TOKEN)
@@ -53,4 +43,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\nHertz Music Bot shutdown requested.")
+        pass

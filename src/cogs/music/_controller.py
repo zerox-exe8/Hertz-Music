@@ -83,7 +83,7 @@ class MusicController:
         if not voice_client or not voice_client.is_connected():
             return
         try:
-            source = discord.FFmpegOpusAudio(track.stream_url, **FFMPEG_OPTIONS)
+            source = discord.FFmpegPCMAudio(track.stream_url, **FFMPEG_OPTIONS)
             voice_client.play(source, after=lambda e: self._handle_track_finish(ctx, e))
         except Exception as ex:
             logger.error(f"Error streaming track: {ex}")
@@ -101,7 +101,7 @@ class MusicController:
             next_track = queue.pop(0)
             self.current_tracks[guild_id] = next_track
             try:
-                source = discord.FFmpegOpusAudio(next_track.stream_url, **FFMPEG_OPTIONS)
+                source = discord.FFmpegPCMAudio(next_track.stream_url, **FFMPEG_OPTIONS)
                 voice_client.play(source, after=lambda e: self._handle_track_finish(ctx, e))
                 embed = discord.Embed(
                     title="Now Playing",
