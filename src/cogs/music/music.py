@@ -92,6 +92,13 @@ class Music(commands.Cog):
         """Clear queue."""
         await handle_clear(ctx, self.controller)
 
+    @commands.hybrid_command(name="remove", description="Remove a specific song from queue by position.")
+    @app_commands.describe(position="Position number of song in queue")
+    async def remove(self, ctx: CustomContext, position: int) -> None:
+        """Remove a track from queue."""
+        from src.cogs.music._commands.controls import handle_remove
+        await handle_remove(ctx, self.controller, position)
+
 
 async def setup(bot: HertzBot) -> None:
     """Load the Music Cog into HertzBot."""
