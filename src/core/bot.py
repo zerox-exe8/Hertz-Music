@@ -100,9 +100,6 @@ class HertzBot(commands.Bot):
 
         # Load all Cogs
         await self._load_all_extensions()
-
-        # Start 24/7 Keep-Alive Web Server
-        await self.server.start()
         logger.info("Setup hook completed successfully.")
 
     async def _load_all_extensions(self) -> None:

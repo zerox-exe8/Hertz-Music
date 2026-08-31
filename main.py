@@ -1,6 +1,6 @@
 """
 Hertz Music Bot - Main Entrypoint
-With Unbreakable Rate-Limit Auto-Retry and Crash Prevention.
+Production Cloud Engine with 24/7 Web Server and Resilient Rate-Limit Backoff.
 """
 
 from __future__ import annotations
@@ -36,26 +36,42 @@ if not discord.opus.is_loaded():
 
 from src.core.bot import HertzBot
 from src.core.config import Config
+from src.core.server import HealthServer
+
+active_bot: HertzBot | None = None
 
 
-async def run_bot() -> None:
-    """Run bot with auto-reconnect on rate limits or network glitches."""
+def get_current_bot() -> HertzBot | None:
+    return active_bot
+
+
+async def run_bot_loop() -> None:
+    """Run bot with smart exponential backoff for Cloudflare / Discord 429 rate limits."""
+    global active_bot
+
     if not Config.DISCORD_TOKEN:
         logger.critical("FATAL: DISCORD_TOKEN is missing! Please set DISCORD_TOKEN in Render Environment Variables.")
-        sys.exit(1)
+        return
+
+    delay = 15.0
 
     while True:
         try:
             bot = HertzBot()
+            active_bot = bot
+            logger.info("Connecting to Discord Gateway...")
             async with bot:
                 await bot.start(Config.DISCORD_TOKEN)
+            # If start exited cleanly without exception, wait before potential reconnect
+            delay = 15.0
+            await asyncio.sleep(5)
         except discord.HTTPException as e:
             if e.status == 429:
-                retry_after = getattr(e, "retry_after", 30) or 30
-                logger.warning(f"Discord 429 Rate Limit encountered. Waiting {retry_after}s before retrying...")
-                await asyncio.sleep(float(retry_after) + 2.0)
+                logger.warning(f"Discord 429 Rate Limit encountered. Cooling down for {delay:.0f}s before retrying...")
+                await asyncio.sleep(delay)
+                delay = min(delay * 2.0, 300.0)
             else:
-                logger.error(f"Discord HTTP Exception: {e}. Retrying in 15s...")
+                logger.error(f"Discord HTTP Exception ({e.status}): {e}. Retrying in 15s...")
                 await asyncio.sleep(15)
         except discord.LoginFailure as e:
             logger.critical(f"FATAL: Discord Login Failure (Invalid Token): {e}")
@@ -64,12 +80,26 @@ async def run_bot() -> None:
             logger.info("Bot execution cancelled.")
             break
         except Exception as e:
-            logger.error(f"Unexpected connection error: {e}. Retrying in 10s...", exc_info=e)
+            logger.error(f"Connection glitch: {e}. Retrying in 10s...", exc_info=e)
             await asyncio.sleep(10)
+        finally:
+            active_bot = None
+
+
+async def main() -> None:
+    # 1. Start 24/7 Keep-Alive Web Server immediately for Render Health Checks
+    server = HealthServer(bot_getter=get_current_bot)
+    await server.start()
+
+    # 2. Run the Discord Bot Connection Loop
+    try:
+        await run_bot_loop()
+    finally:
+        await server.stop()
 
 
 if __name__ == "__main__":
     try:
-        asyncio.run(run_bot())
+        asyncio.run(main())
     except KeyboardInterrupt:
         pass
