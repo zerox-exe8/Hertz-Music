@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import shutil
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import discord
@@ -67,11 +68,9 @@ class MusicController:
 
         # Handle loop modes
         if loop_mode == "track" and current:
-            # Replay same track
             self._play_stream(ctx, current)
             return
         elif loop_mode == "queue" and current:
-            # Append finished track back to queue
             queue = self.get_queue(guild_id)
             queue.append(current)
 
@@ -83,10 +82,11 @@ class MusicController:
         if not voice_client or not voice_client.is_connected():
             return
         try:
-            source = discord.FFmpegPCMAudio(track.stream_url, **FFMPEG_OPTIONS)
+            ffmpeg_exe = shutil.which("ffmpeg") or "ffmpeg"
+            source = discord.FFmpegPCMAudio(track.stream_url, executable=ffmpeg_exe, **FFMPEG_OPTIONS)
             voice_client.play(source, after=lambda e: self._handle_track_finish(ctx, e))
         except Exception as ex:
-            logger.error(f"Error streaming track: {ex}")
+            logger.error(f"Error streaming track: {ex}", exc_info=ex)
             self.play_next(ctx)
 
     def play_next(self, ctx: CustomContext) -> None:
@@ -101,7 +101,8 @@ class MusicController:
             next_track = queue.pop(0)
             self.current_tracks[guild_id] = next_track
             try:
-                source = discord.FFmpegPCMAudio(next_track.stream_url, **FFMPEG_OPTIONS)
+                ffmpeg_exe = shutil.which("ffmpeg") or "ffmpeg"
+                source = discord.FFmpegPCMAudio(next_track.stream_url, executable=ffmpeg_exe, **FFMPEG_OPTIONS)
                 voice_client.play(source, after=lambda e: self._handle_track_finish(ctx, e))
                 embed = discord.Embed(
                     title="Now Playing",
@@ -113,7 +114,7 @@ class MusicController:
                 embed.set_footer(text=f"Requested by {next_track.requester}")
                 asyncio.run_coroutine_threadsafe(ctx.send(embed=embed), self.bot.loop)
             except Exception as ex:
-                logger.error(f"Error starting next track: {ex}")
+                logger.error(f"Error starting next track: {ex}", exc_info=ex)
                 self.play_next(ctx)
         else:
             self.current_tracks.pop(guild_id, None)
