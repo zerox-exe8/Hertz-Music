@@ -32,8 +32,6 @@ FFMPEG_OPTIONS = {
     'options': (
         '-vn '
         '-b:a 320k '
-        '-ar 48000 '
-        '-ac 2 '
         '-bufsize 32768k '
         '-max_muxing_queue_size 8192 '
         '-fflags +nobuffer+fastseek'
