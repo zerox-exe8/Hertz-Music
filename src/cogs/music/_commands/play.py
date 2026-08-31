@@ -62,7 +62,7 @@ async def handle_play(ctx: CustomContext, controller: MusicController, query: st
             )
             if track.thumbnail:
                 embed.set_thumbnail(url=track.thumbnail)
-            embed.set_footer(text=f"Requested by {track.requester} | 320kbps Lossless Audio")
+            embed.set_footer(text=f"Requested by {track.requester}")
             await status_msg.edit(content=None, embed=embed)
         except Exception as e:
             logger.error(f"Error starting playback: {e}")

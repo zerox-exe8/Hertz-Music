@@ -40,7 +40,7 @@ class Music(commands.Cog):
         self.bot = bot
         self.controller = MusicController(bot)
 
-    @commands.hybrid_command(name="play", aliases=["p"], description="Play any song with 320kbps CD master quality.")
+    @commands.hybrid_command(name="play", aliases=["p"], description="Play any song in voice channel.")
     @app_commands.describe(query="Song name, YouTube URL, or Spotify link")
     async def play(self, ctx: CustomContext, *, query: str) -> None:
         """Play exact music tracks in voice channel."""

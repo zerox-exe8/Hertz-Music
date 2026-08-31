@@ -29,7 +29,7 @@ class Help(commands.Cog):
         )
 
         music_cmds = (
-            f"`{prefix}play <query>` - Play any song in 320kbps master CD quality\n"
+            f"`{prefix}play <query>` - Play any song or link in voice\n"
             f"`{prefix}pause` - Pause currently playing music\n"
             f"`{prefix}resume` - Resume paused playback\n"
             f"`{prefix}skip` - Skip to next track in queue\n"

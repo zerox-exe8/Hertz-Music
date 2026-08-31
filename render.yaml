@@ -16,7 +16,7 @@ services:
       - key: EMBED_COLOR
         value: "0x2B2D31"
       - key: STATUS_TEXT
-        value: ".help | 320kbps HD Audio"
+        value: ".help | Play Music"
       - key: ACTIVITY_TYPE
         value: listening
       - key: STATUS_STATE

@@ -29,7 +29,6 @@ async def handle_nowplaying(ctx: CustomContext, controller: MusicController) -> 
         description=f"**[{current.title}]({current.url})**\n\n"
                     f"• **Artist:** `{current.author}`\n"
                     f"• **Duration:** `{dur_m}:{dur_s:02d}`\n"
-                    f"• **Quality:** `320kbps Lossless CD Master`\n"
                     f"• **Requested By:** `{current.requester}`",
         color=0x2B2D31
     )

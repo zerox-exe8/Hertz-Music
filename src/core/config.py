@@ -25,9 +25,9 @@ class Config:
 
     # Bot Identity & Branding
     BOT_NAME: str = os.getenv("BOT_NAME", "Hertz Music").strip()
-    BOT_DESCRIPTION: str = os.getenv("BOT_DESCRIPTION", "Ultra-High-Fidelity 320kbps Lossless Audio Music Engine").strip()
+    BOT_DESCRIPTION: str = os.getenv("BOT_DESCRIPTION", "Next-Gen Discord Music Bot").strip()
     DEFAULT_PREFIX: str = os.getenv("DEFAULT_PREFIX", ".").strip()
-    FOOTER_TEXT: str = os.getenv("FOOTER_TEXT", "Hertz Music | 320kbps CD Master Quality").strip()
+    FOOTER_TEXT: str = os.getenv("FOOTER_TEXT", "Hertz Music").strip()
 
     # Color Settings
     try:
@@ -36,7 +36,7 @@ class Config:
         EMBED_COLOR: int = 0x2B2D31
 
     # Presence & Status
-    STATUS_TEXT: str = os.getenv("STATUS_TEXT", ".help | 320kbps HD Audio").strip()
+    STATUS_TEXT: str = os.getenv("STATUS_TEXT", ".help | Play Music").strip()
     ACTIVITY_TYPE: str = os.getenv("ACTIVITY_TYPE", "listening").strip().lower()
     STATUS_STATE: str = os.getenv("STATUS_STATE", "online").strip().lower()
 

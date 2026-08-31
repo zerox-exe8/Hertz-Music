@@ -110,7 +110,7 @@ class MusicController:
                 )
                 if next_track.thumbnail:
                     embed.set_thumbnail(url=next_track.thumbnail)
-                embed.set_footer(text=f"Requested by {next_track.requester} | 320kbps Lossless Audio")
+                embed.set_footer(text=f"Requested by {next_track.requester}")
                 asyncio.run_coroutine_threadsafe(ctx.send(embed=embed), self.bot.loop)
             except Exception as ex:
                 logger.error(f"Error starting next track: {ex}")
