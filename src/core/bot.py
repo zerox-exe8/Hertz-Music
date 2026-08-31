@@ -57,7 +57,12 @@ class HertzBot(commands.Bot):
             )
             return
 
-        logger.info(f"Command/Message from {message.author} in #{message.channel}: '{message.content}'")
+        if message.guild:
+            perms = message.channel.permissions_for(message.guild.me)
+            logger.info(
+                f"Command from {message.author} in #{message.channel.name} ({message.guild.name}) -> '{message.content}' | "
+                f"Bot Channel Perms: SendMessages={perms.send_messages}, EmbedLinks={perms.embed_links}, ReadHistory={perms.read_message_history}"
+            )
         await self.process_commands(message)
 
     async def on_ready(self) -> None:
@@ -96,13 +101,6 @@ class HertzBot(commands.Bot):
         # Load all Cogs
         await self._load_all_extensions()
 
-        # Global Slash Command Sync
-        try:
-            synced = await self.tree.sync()
-            logger.info(f"Globally synced {len(synced)} slash commands with Discord.")
-        except Exception as e:
-            logger.warning(f"Slash command auto-sync notice: {e}")
-
         # Start 24/7 Keep-Alive Web Server
         await self.server.start()
         logger.info("Setup hook completed successfully.")
@@ -124,8 +122,15 @@ class HertzBot(commands.Bot):
             except Exception as e:
                 logger.error(f"Failed to load extension {module_name}: {e}", exc_info=e)
 
+    async def on_command(self, ctx: CustomContext) -> None:
+        logger.info(f"==> INVOKING COMMAND: '{ctx.command.name}' from {ctx.author} in #{ctx.channel}")
+
+    async def on_command_completion(self, ctx: CustomContext) -> None:
+        logger.info(f"==> SUCCESSFULLY FINISHED: '{ctx.command.name}'")
+
     async def on_command_error(self, ctx: CustomContext, error: Exception) -> None:
         """Central command error handler."""
+        logger.error(f"==> COMMAND ERROR in '{ctx.command}': {error}", exc_info=error)
         if isinstance(error, commands.CommandNotFound):
             return
         if isinstance(error, commands.MissingRequiredArgument):
@@ -139,10 +144,9 @@ class HertzBot(commands.Bot):
             if isinstance(original, discord.Forbidden):
                 await ctx.send("⚠️ Bot is missing permissions (e.g. `Embed Links` or `Connect/Speak`). Please grant Administrator or Embed Links to the bot role.")
                 return
-            logger.error(f"Error executing command '{ctx.command}': {original}", exc_info=original)
             await ctx.send(f"❌ An error occurred: `{original}`")
             return
-        logger.error(f"Unhandled error in {ctx.command}: {error}", exc_info=error)
+        await ctx.send(f"❌ Command failed: `{error}`")
 
     async def close(self) -> None:
         """Gracefully close bot and sessions."""
