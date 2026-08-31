@@ -1,10 +1,12 @@
 # Discord & Voice Core
 discord.py>=2.3.2
-wavelink>=3.5.0
+davey>=0.1.6
+pyogg>=0.6.14a1
+static-ffmpeg>=2.5
 aiohttp>=3.9.0
 asyncpg>=0.29.0
 
-# Audio & Encryption
+# Audio & Extraction
 yt-dlp>=2025.01.01
 pyDes>=2.0.1
 
